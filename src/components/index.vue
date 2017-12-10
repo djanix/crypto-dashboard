@@ -22,7 +22,11 @@
   <section>
     <h1 class="mb-5">{{title}}</h1>
 
-    <h2 class="mb-5">Total value: {{cashFormat(totalValue)}}</h2>
+    <h2 class="mb-5">
+      Investment: {{cashFormat(total.investment)}}<br>
+      Value: {{cashFormat(total.value)}}<br>
+      Increase: {{round(total.increase)}}%<br>
+    </h2>
 
     <v-data-table
       v-bind:headers="headers"
@@ -32,9 +36,10 @@
       class="elevation-1"
     >
       <template slot="items" slot-scope="props">
-        <td class="text-xs-right">{{ props.item.name }}</td>
+        <td class="text-xs-right">{{ props.item.coinmarketcap.name }}</td>
+        <td class="text-xs-right">{{ props.item.coinmarketcap.symbol }}</td>
         <td class="text-xs-right">{{ cashFormat(props.item.coinmarketcap.price_cad) }}</td>
-        <td class="text-xs-right">{{ round(props.item.qty) }}</td>
+        <td class="text-xs-right">{{ round(props.item.qty, 3) }}</td>
         <td class="text-xs-right">{{ cashFormat(props.item.investment) }}</td>
         <td class="text-xs-right">{{ cashFormat(props.item.value) }}</td>
 
@@ -70,7 +75,8 @@
         title: 'Crypto Portfolio',
 
         headers: [
-          { text: 'Name', value: 'name' },
+          { text: 'Name', value: 'coinmarketcap.name' },
+          { text: 'Symbol', value: 'coinmarketcap.symbol' },
           { text: 'Price', value: 'price' },
           { text: 'Quantity', value: 'qty' },
           { text: 'Investment', value: 'investment' },
@@ -113,7 +119,6 @@
           return {
             id,
             coinmarketcap: crypto,
-            name: this.buildName(id),
             investment,
             qty,
             value,
@@ -122,10 +127,22 @@
         });
       },
 
-      totalValue() {
-        return _.reduce(this.userCryptosAggregate, (total, crypto) =>
-          total + parseFloat(crypto.value)
-        , 0);
+      total() {
+        const defaultTotal = {
+          investment: 0,
+          value: 0,
+          increase: 0,
+        };
+
+        const totalObj = _.reduce(this.userCryptosAggregate, (total, crypto) =>
+          Object.assign({}, total, {
+            investment: total.investment + parseFloat(crypto.investment),
+            value: total.value + parseFloat(crypto.value),
+          }), defaultTotal);
+
+        totalObj.increase = ((totalObj.value - totalObj.investment) / totalObj.investment) * 100;
+
+        return totalObj;
       },
     },
 
@@ -157,16 +174,11 @@
           });
       },
 
-      buildName(id) {
-        const crypto = this.cryptos.find(cr => cr.id === id);
-        return `${crypto.name} (${crypto.symbol})`;
-      },
-
       calculateColor(value) {
         return parseFloat(value) >= 0 ? 'green' : 'red';
       },
 
-      round: num => _.round(num, 2),
+      round: (num, roundVal = 2) => _.round(num, roundVal),
 
       cashFormat: num => `${parseFloat(num).toFixed(2)}$`,
     },
