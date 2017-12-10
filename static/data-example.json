@@ -1,0 +1,24 @@
+{
+  "bitcoin": {
+    "investment": 1000,
+    "items": [
+      {
+        "exchange": "coinbase",
+        "qty": 0.112
+      },
+      {
+        "exchange": "bitfinex",
+        "qty": 0.257
+      }
+    ]
+  },
+  "ethereum": {
+    "investment": 1200,
+    "items": [
+      {
+        "exchange": "coinsquare",
+        "qty": 3.085
+      }
+    ]
+  }
+}
